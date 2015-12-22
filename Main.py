@@ -1,16 +1,17 @@
 #!/bin/python
-#Look at http://www.pythonforbeginners.com/code-snippets-source-code/port-scanner-in-python;
+# Look at http://www.pythonforbeginners.com/code-snippets-source-code/port-scanner-in-python;
 
 import datetime
 import os
 from socket import *
 
 from Termcolor import colored
-#Version TCP PythonFacture-obj
+
+# Version TCP PythonFacture-obj
 VERSION = (1, 2, 3)
 TAXEPROV = 9.975
 TAXEFED = 5
-PORT=5555
+PORT = 5555
 
 
 def clear():
@@ -109,6 +110,7 @@ class Magasin:
         else:
             print("Total :", "%.2f" % float(self.totaltaxe))
 
+
 choix = 1
 while choix != 0:
     clear()
@@ -125,7 +127,6 @@ while choix != 0:
             continue
         else:
             break
-
 
     if choix == 1:
 
@@ -207,52 +208,51 @@ while choix != 0:
         magasin1.afficher()
         magasin1.save()
     if choix == 4:
-        sockrecv = socket()             # Create a socket object
-        host = input("Entrer le nom de l'apparail")     # Get local machine name
+        sockrecv = socket()  # Create a socket object
+        host = input("Entrer le nom de l'apparail")  # Get local machine name
 
         sockrecv.connect((host, PORT))
-        sockrecv.send(bytes("Hello server!",'UTF-8'))
-
-        with open('received_file', 'wb') as f:
-            print ('file opened')
+        sockrecv.send(bytes("Hello server!", 'UTF-8'))
+        with open('Facture_android.csv', 'wb') as f:
             while True:
-                print('receiving data...')
+                print('Récuperation du fichier...')
                 data = sockrecv.recv(1024)
                 if not data:
+                    print("Le fichier recu est vide")
                     break
                 # write data to a file
                 f.write(data)
 
         f.close()
-        print('Successfully get the file')
+        print('Fichier Recu !')
         sockrecv.close()
-        print('connection closed')
+        print('Connection fermer')
     if choix == 3:
-        socksend = socket()             # Create a socket object
-        host = gethostname()     # Get local machine name
-        socksend.bind((host, PORT))            # Bind to the port
-        socksend.listen(5)                     # Now wait for client connection.
+        socksend = socket()
+        host = gethostname()
+        socksend.bind((host, PORT))
+        socksend.listen(5)
 
-        print("Nom de l'apparail",host)
-        print ('En attente de la récupération du fichier CSV....')
+        print("Nom de l'apparail", host)
+        print('En attente de la récupération du fichier CSV....')
 
         while True:
-            conn, addr = socksend.accept()     # Establish connection with client.
-            print ('Got connection from', addr)
+            conn, addr = socksend.accept()  # Establish connection with client.
+            print('Connecter a', addr)
             data = conn.recv(1024)
-            print('Server received', repr(data))
-
-            filename='text.txt'
-            f = open(filename,'rb')
+            print('Envoie du fichier...')
+            filename = 'Facture.csv'
+            f = open(filename, 'rb')
             l = f.read(1024)
             while (l):
-               conn.send(l)
-               print('Sent ',repr(l))
-               l = f.read(1024)
-            f.close()
-
-            print('Done sending')
+                conn.send(l)
+                print('Envoyer ', repr(l))
+                l = f.read(1024)
+                conn.sendall(data)
             conn.close()
+
+            print('Envoie terminer')
+            break
 
     print("Presser une touche pour continuer")
     input()
