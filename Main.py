@@ -1,15 +1,16 @@
 #!/bin/python
-#Look at http://www.pythonforbeginners.com/code-snippets-source-code/port-scanner-in-python
+#Look at http://www.pythonforbeginners.com/code-snippets-source-code/port-scanner-in-python;
 
 import datetime
 import os
-import socket
+from socket import *
 
 from Termcolor import colored
 #Version TCP PythonFacture-obj
 VERSION = (1, 2, 3)
 TAXEPROV = 9.975
 TAXEFED = 5
+PORT=5555
 
 
 def clear():
@@ -116,7 +117,6 @@ while choix != 0:
     print("2.Achat en magasin")
     print("3.Envoyer votre fichier CSV")
     print("4.Recevoir votre fichier CSV")
-    print([l for l in ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1], [[(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close()) for s in [socket.socket(socket.AF_INET, socket.SOCK_DGRAM)]][0][1]]) if l][0][0])
     while True:
         try:
             choix = int(input("Quelle est votre type achat :"))
@@ -206,22 +206,53 @@ while choix != 0:
         magasin1.setdescription(str(input("Quelle est la description :")))
         magasin1.afficher()
         magasin1.save()
-    if choix == 3:
-        s = socket.socket()         # Create a socket object
-        host = socket.gethostname() # Get local machine name
-        port = 12345                 # Reserve a port for your service.
-        s.connect((host, port))
-        s.send("Hello server!")
-        f = open('tosend.png','rb')
-        print ('Sending...')
-        l = f.read(1024)
-        while (l):
-            print ('Sending...')
-            s.send(l)
-            l = f.read(1024)
+    if choix == 4:
+        sockrecv = socket()             # Create a socket object
+        host = input("Entrer le nom de l'apparail")     # Get local machine name
+
+        sockrecv.connect((host, PORT))
+        sockrecv.send(bytes("Hello server!",'UTF-8'))
+
+        with open('received_file', 'wb') as f:
+            print ('file opened')
+            while True:
+                print('receiving data...')
+                data = sockrecv.recv(1024)
+                if not data:
+                    break
+                # write data to a file
+                f.write(data)
+
         f.close()
-        print ("Done Sending")
-        print (s.recv(1024))
-        s.close
+        print('Successfully get the file')
+        sockrecv.close()
+        print('connection closed')
+    if choix == 3:
+        socksend = socket()             # Create a socket object
+        host = gethostname()     # Get local machine name
+        socksend.bind((host, PORT))            # Bind to the port
+        socksend.listen(5)                     # Now wait for client connection.
+
+        print("Nom de l'apparail",host)
+        print ('En attente de la récupération du fichier CSV....')
+
+        while True:
+            conn, addr = socksend.accept()     # Establish connection with client.
+            print ('Got connection from', addr)
+            data = conn.recv(1024)
+            print('Server received', repr(data))
+
+            filename='text.txt'
+            f = open(filename,'rb')
+            l = f.read(1024)
+            while (l):
+               conn.send(l)
+               print('Sent ',repr(l))
+               l = f.read(1024)
+            f.close()
+
+            print('Done sending')
+            conn.close()
+
     print("Presser une touche pour continuer")
     input()
